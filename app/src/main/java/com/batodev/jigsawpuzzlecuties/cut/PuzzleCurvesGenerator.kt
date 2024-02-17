@@ -1,4 +1,4 @@
-package com.batodev.jigsawpuzzle.cut
+package com.batodev.jigsawpuzzlecuties.cut
 
 import kotlin.math.floor
 import kotlin.math.roundToInt

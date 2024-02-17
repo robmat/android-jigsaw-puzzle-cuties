@@ -1,12 +1,12 @@
-package com.batodev.jigsawpuzzle.cut
+package com.batodev.jigsawpuzzlecuties.cut
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.widget.ImageView
-import com.batodev.jigsawpuzzle.PuzzleActivity
-import com.batodev.jigsawpuzzle.PuzzlePiece
+import com.batodev.jigsawpuzzlecuties.PuzzleActivity
+import com.batodev.jigsawpuzzlecuties.PuzzlePiece
 import com.caverock.androidsvg.SVG
 import com.caverock.androidsvg.SVGParseException
 import java.util.ArrayDeque

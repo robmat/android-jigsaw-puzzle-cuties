@@ -1,4 +1,4 @@
-package com.batodev.jigsawpuzzle
+package com.batodev.jigsawpuzzlecuties
 
 import android.media.MediaPlayer
 import android.view.MotionEvent

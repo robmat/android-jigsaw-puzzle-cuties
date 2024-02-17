@@ -1,4 +1,4 @@
-package com.batodev.jigsawpuzzle
+package com.batodev.jigsawpuzzlecuties
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -16,7 +16,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageView
-import com.batodev.jigsawpuzzle.SettingsHelper.load
+import com.batodev.jigsawpuzzlecuties.SettingsHelper.load
 import java.io.IOException
 
 class ImageAdapter(private val mContext: Context) : BaseAdapter() {

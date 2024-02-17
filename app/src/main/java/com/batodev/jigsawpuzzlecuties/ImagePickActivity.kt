@@ -1,4 +1,4 @@
-package com.batodev.jigsawpuzzle
+package com.batodev.jigsawpuzzlecuties
 
 import android.Manifest
 import android.content.Intent

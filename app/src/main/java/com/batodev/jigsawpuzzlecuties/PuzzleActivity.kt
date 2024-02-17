@@ -1,4 +1,4 @@
-package com.batodev.jigsawpuzzle
+package com.batodev.jigsawpuzzlecuties
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -20,8 +20,8 @@ import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.exifinterface.media.ExifInterface
-import com.batodev.jigsawpuzzle.cut.PuzzleCurvesGenerator
-import com.batodev.jigsawpuzzle.cut.PuzzleCutter
+import com.batodev.jigsawpuzzlecuties.cut.PuzzleCurvesGenerator
+import com.batodev.jigsawpuzzlecuties.cut.PuzzleCutter
 import com.bumptech.glide.Glide
 import com.caverock.androidsvg.SVG
 import java.io.File

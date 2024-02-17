@@ -6,7 +6,7 @@ plugins {
 
 android {
     defaultConfig {
-        applicationId "com.batodev.jigsawpuzzle"
+        applicationId "com.batodev.jigsawpuzzlecuties"
         minSdkVersion 24
         compileSdk 34
         targetSdkVersion 34
@@ -24,7 +24,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    namespace 'com.batodev.jigsawpuzzle'
+    namespace 'com.batodev.jigsawpuzzlecuties'
 }
 
 dependencies {

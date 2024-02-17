@@ -1,4 +1,4 @@
-package com.batodev.jigsawpuzzle
+package com.batodev.jigsawpuzzlecuties
 
 class Settings {
     var uncoveredPics: MutableList<String> = ArrayList()
