@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">Puzzled Girls</string>
+    <string name="app_name" translatable="false">Paws &amp; Puzzles</string>
     <string name="main_menu_activity_play_the_game">Let\'s play!</string>
     <string name="main_menu_activity_unlocked_gallery">Gallery of revealed pictures</string>
     <string name="main_menu_activity_more_apps">More apps like this</string>
