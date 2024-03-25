@@ -72,7 +72,7 @@ class ImageAdapter(private val mContext: Context) : BaseAdapter() {
                     canvas.drawBitmap(picFromAsset, 0f, 0f, alphaPaint)
                     imageView.setImageBitmap(mutableBitmap)
                 } catch (e: IOException) {
-                    Log.w(ImageAdapter::class.java.simpleName, e.localizedMessage)
+                    e.localizedMessage?.let { Log.w(ImageAdapter::class.java.simpleName, it) }
                     throw RuntimeException(e)
                 }
             }
