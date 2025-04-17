@@ -1,11 +1,12 @@
 package com.batodev.jigsawpuzzlecuties
 
-import android.media.MediaPlayer
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnTouchListener
 import android.view.ViewGroup
 import android.widget.RelativeLayout
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 class TouchListener(private val activity: PuzzleActivity) : OnTouchListener {
     private var xDelta = 0f
@@ -33,17 +34,14 @@ class TouchListener(private val activity: PuzzleActivity) : OnTouchListener {
     override fun onTouch(view: View, motionEvent: MotionEvent): Boolean {
         val x = motionEvent.rawX
         val y = motionEvent.rawY
-        val tolerance = Math.sqrt(
-            Math.pow(view.width.toDouble(), 2.0) + Math.pow(
-                view.height.toDouble(),
-                2.0
-            )
+        val tolerance = sqrt(
+            view.width.toDouble().pow(2.0) + view.height.toDouble().pow(2.0)
         ) / 10
         val piece = view as PuzzlePiece
         if (!piece.canMove) {
             return true
         }
-        val lParams = view.getLayoutParams() as RelativeLayout.LayoutParams
+        val lParams = view.layoutParams as RelativeLayout.LayoutParams
         when (motionEvent.action and MotionEvent.ACTION_MASK) {
             MotionEvent.ACTION_DOWN -> {
                 xDelta = x - lParams.leftMargin
@@ -67,9 +65,7 @@ class TouchListener(private val activity: PuzzleActivity) : OnTouchListener {
                     piece.canMove = false
                     sendViewToBack(piece)
                     activity.checkGameOver()
-                    val mp = MediaPlayer.create(activity, okSoundsIds.random())
-                    mp.setOnCompletionListener { mp.release() }
-                    mp.start()
+                    SoundsPlayer.play(okSoundsIds.random(), activity)
                 }
                 view.performClick()
             }

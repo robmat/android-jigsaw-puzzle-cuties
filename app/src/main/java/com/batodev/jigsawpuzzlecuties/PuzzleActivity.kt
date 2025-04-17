@@ -7,7 +7,6 @@ import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.drawable.BitmapDrawable
-import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -25,7 +24,6 @@ import com.batodev.jigsawpuzzlecuties.cut.PuzzleCutter
 import com.bumptech.glide.Glide
 import com.caverock.androidsvg.SVG
 import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -33,6 +31,8 @@ import java.util.Random
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlin.system.measureTimeMillis
+import androidx.core.graphics.scale
+import androidx.core.graphics.createBitmap
 
 
 class PuzzleActivity : AppCompatActivity() {
@@ -140,7 +140,7 @@ class PuzzleActivity : AppCompatActivity() {
         val croppedImageWidth = (scaledBitmapWidth)
         val croppedImageHeight = (scaledBitmapHeight)
         val scaledBitmap =
-            Bitmap.createScaledBitmap(bitmap, scaledBitmapWidth, scaledBitmapHeight, true)
+            bitmap.scale(scaledBitmapWidth, scaledBitmapHeight)
         val croppedBitmap = Bitmap.createBitmap(
             scaledBitmap,
             abs(scaledBitmapLeft),
@@ -157,7 +157,7 @@ class PuzzleActivity : AppCompatActivity() {
         val svgString = puzzleCurvesGenerator.generateSvg()
         // paint grid on image
         val bitmapCopy =
-            Bitmap.createBitmap(croppedBitmap.width, croppedBitmap.height, Bitmap.Config.ARGB_8888)
+            createBitmap(croppedBitmap.width, croppedBitmap.height)
         val canvas = Canvas(bitmapCopy)
         val paint = Paint()
         paint.alpha = 70
@@ -249,9 +249,7 @@ class PuzzleActivity : AppCompatActivity() {
                 SettingsHelper.save(this, settings)
                 Toast.makeText(this, R.string.image_added_to_gallery, Toast.LENGTH_SHORT).show()
             }
-            val mp = MediaPlayer.create(this, winSoundIds.random())
-            mp.setOnCompletionListener { mp.release() }
-            mp.start()
+            SoundsPlayer.play(winSoundIds.random(), this)
             findViewById<Button>(R.id.puzzle_activity_play_again).visibility = View.VISIBLE
             AdHelper.showAd(this)
         }
@@ -333,17 +331,6 @@ class PuzzleActivity : AppCompatActivity() {
 
         // Crop the bitmap to the specified region
         return Bitmap.createBitmap(bitmap, rect.left, rect.top, rect.width(), rect.height())
-    }
-
-    companion object {
-        fun rotateImage(source: Bitmap, angle: Float): Bitmap {
-            val matrix = Matrix()
-            matrix.postRotate(angle)
-            return Bitmap.createBitmap(
-                source, 0, 0, source.width, source.height,
-                matrix, true
-            )
-        }
     }
 
     fun playAgain(view: View) {
