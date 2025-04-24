@@ -18,6 +18,9 @@ android {
         sourceCompatibility JavaVersion.VERSION_22
         targetCompatibility JavaVersion.VERSION_22
     }
+    kotlinOptions {
+        jvmTarget = "22"
+    }
     buildTypes {
         release {
             minifyEnabled false
