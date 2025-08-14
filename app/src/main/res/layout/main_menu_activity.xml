@@ -1,67 +1,128 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main_game_activity_main_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainMenuActivity">
+    android:background="@color/black"
+    tools:context=".activity.MainMenuActivity">
 
     <ImageView
+        android:id="@+id/main_menu_background"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:alpha="0.4"
         android:contentDescription="@string/app_name"
         android:scaleType="centerCrop"
         android:src="@drawable/main_menu_background" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center_horizontal"
-        android:orientation="vertical">
+    <TextView
+        android:id="@+id/main_menu_activity_game_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginEnd="20dp"
+        android:background="@drawable/text_background"
+        android:fontFamily="monospace"
+        android:gravity="center"
+        android:text="@string/app_name"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
+    <!-- try glow button instead of text view once you get colors right
+    <com.smb.glowbutton.GlowButton
+        android:id="@+id/main_menu_activity_game_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:gb_backgroundColor="@color/colorPrimaryDark"
+        app:gb_cornerRadius="5dp"
+        app:gb_text="@string/app_name"
+        app:gb_textColor="@color/white"
+        app:gb_textSize="36dp"
+        app:gb_textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+    -->
+
+    <LinearLayout
+        android:id="@+id/buttons_container"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@id/main_menu_activity_emberfox_logo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/main_menu_activity_game_title"
+        app:layout_constraintVertical_bias="1.0"> <!-- This pushes the LinearLayout towards the logo -->
+
+        <com.smb.glowbutton.NeonButton
+            android:id="@+id/main_menu_activity_play_the_game"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="30dp"
-            android:background="@drawable/text_background"
-            android:fontFamily="monospace"
-            android:gravity="center"
-            android:text="@string/app_name"
-            android:textColor="@color/white"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            app:nb_cornerRadius="30dp"
+            app:nb_disabledStateColor="@android:color/darker_gray"
+            app:nb_drawableEnd="@drawable/ic_puzzle_36dp"
+            app:nb_drawablePadding="10dp"
+            app:nb_drawableStart="@drawable/ic_puzzle_36dp"
+            app:nb_gradientEnd="@color/colorAccent"
+            app:nb_gradientStart="@color/colorPrimary"
+            app:nb_text="@string/main_menu_activity_play_the_game"
+            app:nb_textColor="@color/colorAccent"
+            app:nb_textSize="18dp"
+            app:nb_textStyle="normal" />
 
-        <Button
-            android:id="@+id/main_menu_activity_play_the_game"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="320dp"
-            android:background="@drawable/orange_button_background"
-            android:onClick="play"
-            android:soundEffectsEnabled="true"
-            android:text="@string/main_menu_activity_play_the_game"
-            android:textSize="20sp" />
-
-        <Button
+        <com.smb.glowbutton.NeonButton
             android:id="@+id/main_menu_activity_unlocked_gallery"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/orange_button_background"
-            android:onClick="gallery"
-            android:soundEffectsEnabled="true"
-            android:text="@string/main_menu_activity_unlocked_gallery"
-            android:textSize="20sp" />
+            app:nb_cornerRadius="30dp"
+            app:nb_disabledStateColor="@android:color/darker_gray"
+            app:nb_drawableEnd="@drawable/ic_gallery_36dp"
+            app:nb_drawablePadding="10dp"
+            app:nb_drawableStart="@drawable/ic_gallery_36dp"
+            app:nb_gradientEnd="@color/colorAccent"
+            app:nb_gradientStart="@color/colorPrimary"
+            app:nb_text="@string/main_menu_activity_unlocked_gallery"
+            app:nb_textColor="@color/colorAccent"
+            app:nb_textSize="18dp"
+            app:nb_textStyle="normal" />
 
-        <Button
+        <com.smb.glowbutton.NeonButton
             android:id="@+id/main_menu_activity_more_apps"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:background="@drawable/orange_button_background"
-            android:onClick="moreApps"
-            android:soundEffectsEnabled="true"
-            android:text="@string/main_menu_activity_more_apps"
-            android:textSize="20sp" />
+            app:nb_cornerRadius="30dp"
+            app:nb_disabledStateColor="@android:color/darker_gray"
+            app:nb_drawableEnd="@drawable/ic_gallery_36dp"
+            app:nb_drawablePadding="10dp"
+            app:nb_drawableStart="@drawable/ic_gallery_36dp"
+            app:nb_gradientEnd="@color/colorAccent"
+            app:nb_gradientStart="@color/colorPrimary"
+            app:nb_text="@string/main_menu_activity_more_apps"
+            app:nb_textColor="@color/colorAccent"
+            app:nb_textSize="18dp"
+            app:nb_textStyle="normal" />
     </LinearLayout>
+
+    <ImageView
+        android:id="@+id/main_menu_activity_emberfox_logo"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_marginBottom="20dp"
+        android:contentDescription="@string/app_name"
+        android:src="@drawable/emberfox_logo"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

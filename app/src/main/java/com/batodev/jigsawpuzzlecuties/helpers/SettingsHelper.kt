@@ -1,8 +1,10 @@
-package com.batodev.jigsawpuzzlecuties
+package com.batodev.jigsawpuzzlecuties.helpers
 
 import android.content.Context
 import android.util.Log
 import androidx.core.content.edit
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 private const val PREFS = "prefs"
 private const val DISPLAY_ADD_EVERY_X_PIC_VIEW = "displayAddEveryXPicView"
@@ -15,8 +17,19 @@ private const val LAST_SET_DIFFICULTY_CUSTOM_HEIGHT = "lastSetDifficultyCustomHe
 private const val LAST_SET_DIFFICULTY_CUSTOM_WIDTH = "lastSetDifficultyCustomWidth"
 private const val SHOW_IMAGE_IN_BACKGROUND_OF_THE_PUZZLE = "showImageInBackgroundOfThePuzzle"
 private const val PLAY_SOUNDS = "playSounds"
+private const val HIGHSCORES = "highscores"
 
+/**
+ * A helper object for saving and loading application settings.
+ */
 object SettingsHelper {
+    private val gson = Gson()
+
+    /**
+     * Saves the provided {@link Settings} object to shared preferences.
+     * @param context The {@link Context} used to access shared preferences.
+     * @param settings The {@link Settings} object to be saved.
+     */
     fun save(context: Context, settings: Settings) {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         prefs.edit {
@@ -29,11 +42,18 @@ object SettingsHelper {
             putBoolean(SHOW_IMAGE_IN_BACKGROUND_OF_THE_PUZZLE, settings.showImageInBackgroundOfThePuzzle)
             putBoolean(PLAY_SOUNDS, settings.playSounds)
             putString(UNCOVERED_PICS, settings.uncoveredPics.joinToString(SEPARATOR))
+            putString(HIGHSCORES, gson.toJson(settings.highscores))
             apply()
             Log.d(SettingsHelper.javaClass.simpleName, "Saved: $settings")
         }
     }
 
+    /**
+     * Loads the application settings from shared preferences.
+     * If no settings are found, default values are used.
+     * @param context The {@link Context} used to access shared preferences.
+     * @return The loaded {@link Settings} object.
+     */
     fun load(context: Context): Settings {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val settings = Settings()
@@ -47,6 +67,9 @@ object SettingsHelper {
         settings.playSounds = prefs.getBoolean(PLAY_SOUNDS, true)
         settings.uncoveredPics = prefs.getString(UNCOVERED_PICS, "")!!.split(SEPARATOR).toMutableList()
         settings.uncoveredPics.remove("")
+        val highscoresJson = prefs.getString(HIGHSCORES, "{}") ?: "{}"
+        val type = object : TypeToken<MutableMap<String, MutableList<String>>>() {}.type
+        settings.highscores = gson.fromJson(highscoresJson, type)
         return settings
     }
 }

@@ -2,19 +2,24 @@
 <resources>
     <string name="app_name" translatable="false">Paws &amp; Puzzles</string>
     <string name="columns">Columns</string>
+    <string name="congratulations_top_10">Congratulations, you made it into the top 10 of the fastest solutions!</string>
     <string name="easy">Easy</string>
     <string name="hard">Hard</string>
+    <string name="high_scores">High Scores</string>
     <string name="how_many_puzzles">How many puzzle pieces?</string>
     <string name="image_added_to_gallery">New image available in the gallery.</string>
     <string name="main_menu_activity_more_apps">More apps like this</string>
+    <string name="main_menu_activity_play_part_2">Download Puzzled Girls part 2</string>
     <string name="main_menu_activity_play_the_game">Let\'s play!</string>
     <string name="main_menu_activity_play_to_uncover">Play the game first</string>
     <string name="main_menu_activity_unlocked_gallery">Gallery of revealed pictures</string>
     <string name="medium">Medium</string>
     <string name="play_sounds">Sound</string>
     <string name="puzzle_activity_play_again">Play again</string>
+    <string name="puzzle_activity_we_are_cutting">I\'m cutting out your puzzles now…\nJust give me a while.</string>
     <string name="rows">Rows</string>
     <string name="show_image_as_background">Show image in the back</string>
     <string name="show_puzzle_grid">Show puzzle shapes</string>
     <string name="start">Start the game</string>
+    <string name="wallpaper_ok">The picture has been set as your wallpaper</string>
 </resources>

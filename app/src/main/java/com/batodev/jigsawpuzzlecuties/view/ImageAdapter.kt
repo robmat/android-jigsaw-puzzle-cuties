@@ -1,4 +1,4 @@
-package com.batodev.jigsawpuzzlecuties
+package com.batodev.jigsawpuzzlecuties.view
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -14,38 +14,83 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AccelerateDecelerateInterpolator
+import android.view.animation.AnimationSet
+import android.view.animation.ScaleAnimation
 import android.widget.BaseAdapter
 import android.widget.ImageView
-import com.batodev.jigsawpuzzlecuties.SettingsHelper.load
-import java.io.IOException
 import androidx.core.graphics.createBitmap
+import com.batodev.jigsawpuzzlecuties.R
+import com.batodev.jigsawpuzzlecuties.helpers.FirebaseHelper
+import com.batodev.jigsawpuzzlecuties.helpers.SettingsHelper.load
+import java.io.IOException
 
+/**
+ * An adapter for displaying images in a grid view.
+ */
+/**
+ * An adapter for displaying images in a grid view.
+ * @param mContext The context of the application.
+ */
 class ImageAdapter(private val mContext: Context) : BaseAdapter() {
     private val am: AssetManager = mContext.assets
     private var files: Array<String>? = null
     private val handler = Handler(Looper.getMainLooper())
+    private var lastPosition = -1
 
     init {
+        /**
+         * Initializes the adapter by listing image files from the "img" asset folder.
+         * If an IOException occurs, it is printed to the stack trace.
+         */
         try {
             files = am.list("img")
         } catch (e: IOException) {
+            FirebaseHelper.logException(mContext, "ImageAdapter.init", e.message)
             e.printStackTrace()
         }
     }
 
+    /**
+     * Returns the number of items in the adapter.
+     * @return The total count of image files.
+     */
     override fun getCount(): Int {
         return files!!.size
     }
 
+    /**
+     * Returns the data item associated with the specified position in the data set.
+     * This adapter does not directly return data items, so it always returns null.
+     * @param position Position of the item whose data we want within the adapter's data set.
+     * @return The data at the specified position.
+     */
     override fun getItem(position: Int): Any? {
         return null
     }
 
+    /**
+     * Returns the row id associated with the specified position in the list.
+     * This adapter does not use stable IDs, so it always returns 0.
+     * @param position The position of the item within the adapter's data set whose row id we want.
+     * @return The id of the item at the specified position.
+     */
     override fun getItemId(position: Int): Long {
         return 0
     }
 
-    // create a new ImageView for each item referenced by the Adapter
+    /**
+     * Get a View that displays the data at the specified position in the data set.
+     * This method inflates a new view or recycles an existing one, then populates it with image data.
+     * It also applies an alpha filter if the image is not yet uncovered in the game settings.
+     * @param position The position of the item within the adapter's data set of the item whose view we want.
+     * @param convertView The old view to reuse, if possible. Note: You should check that this view
+     *        is non-null and of an appropriate type before using. If it is not possible to convert
+     *        this view to display the correct data, this method can create a new view.
+     * @param parent The parent that this view will eventually be attached to.
+     * @return A View corresponding to the data at the specified position.
+     * @throws RuntimeException if an IOException occurs while loading the image from assets.
+     */
     @SuppressLint("InflateParams")
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val settings = load(mContext)
@@ -55,7 +100,20 @@ class ImageAdapter(private val mContext: Context) : BaseAdapter() {
             convertViewVar = layoutInflater.inflate(R.layout.grid_element, null)
         }
         val imageView = convertViewVar!!.findViewById<ImageView>(R.id.gridImageview)
-        imageView.setImageBitmap(null)
+
+        if (position > lastPosition) {
+            val animation = ScaleAnimation(
+                0.0f, 1.0f, 0.0f, 1.0f,
+                ScaleAnimation.RELATIVE_TO_SELF, 0.5f,
+                ScaleAnimation.RELATIVE_TO_SELF, 0.5f
+            )
+            animation.duration = 300
+            val set = AnimationSet(true)
+            set.addAnimation(animation)
+            set.interpolator = AccelerateDecelerateInterpolator()
+            imageView.startAnimation(set)
+            lastPosition = position
+        }
         // run image related code after the view was laid out
         imageView.post {
             handler.post {
@@ -71,6 +129,7 @@ class ImageAdapter(private val mContext: Context) : BaseAdapter() {
                     canvas.drawBitmap(picFromAsset, 0f, 0f, alphaPaint)
                     imageView.setImageBitmap(mutableBitmap)
                 } catch (e: IOException) {
+                    FirebaseHelper.logException(mContext, "ImageAdapter.getView", e.message)
                     e.localizedMessage?.let { Log.w(ImageAdapter::class.java.simpleName, it) }
                     throw RuntimeException(e)
                 }
@@ -80,6 +139,15 @@ class ImageAdapter(private val mContext: Context) : BaseAdapter() {
     }
 
     companion object {
+        /**
+         * Loads a bitmap from the application's assets, scaled to fit target dimensions.
+         * @param targetH The target height for the bitmap.
+         * @param targetW The target width for the bitmap.
+         * @param assetName The name of the asset file (e.g., "image.png").
+         * @param am The AssetManager instance to access application assets.
+         * @return The scaled {@link Bitmap}, or null if target dimensions are zero.
+         * @throws IOException if the asset file cannot be opened or read.
+         */
         @Throws(IOException::class)
         fun getPicFromAsset(
             targetH: Int,
