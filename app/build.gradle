@@ -20,8 +20,8 @@ android {
     defaultConfig {
         applicationId "com.batodev.jigsawpuzzlecuties"
         minSdkVersion 24
-        compileSdk = 36
-        targetSdkVersion 36
+        compileSdk = 37
+        targetSdkVersion 37
         versionCode versionProps.getProperty("versionCode").toInteger()
         versionName versionProps.getProperty("versionName")
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
