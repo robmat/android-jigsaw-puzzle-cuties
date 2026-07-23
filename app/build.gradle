@@ -3,7 +3,18 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'com.google.devtools.ksp'
     id 'com.google.gms.google-services'
+    id 'com.github.triplet.play'
+    id 'com.batodev.releasetools'
 }
+
+def keystorePropertiesFile = rootProject.file("../keystore.properties")
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+def versionProps = new Properties()
+file("version.properties").withInputStream { versionProps.load(it) }
 
 android {
     defaultConfig {
@@ -11,18 +22,30 @@ android {
         minSdkVersion 24
         compileSdk = 36
         targetSdkVersion 36
-        versionCode 4
-        versionName "3.3"
+        versionCode versionProps.getProperty("versionCode").toInteger()
+        versionName versionProps.getProperty("versionName")
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_21
         targetCompatibility JavaVersion.VERSION_21
     }
+    signingConfigs {
+        release {
+            if (keystorePropertiesFile.exists()) {
+                storeFile rootProject.file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
     namespace 'com.batodev.jigsawpuzzlecuties'
@@ -32,6 +55,12 @@ android {
             useJUnitPlatform()
         }
     }
+}
+
+play {
+    serviceAccountCredentials.set(rootProject.file("../play-console-api-465319-0f9c399097c5.json"))
+    track.set("internal")
+    defaultToAppBundles.set(true)
 }
 
 dependencies {

@@ -5,6 +5,10 @@ build/
 # Local configuration file (sdk path, etc)
 local.properties
 
+# Play Publisher secrets (shared, live one folder up)
+keystore.properties
+play-service-account.json
+
 # Log/OS Files
 *.log
 Screenshot_20240208*.png
