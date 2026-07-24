@@ -9,7 +9,6 @@ import android.os.Looper
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.ImageView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import com.batodev.jigsawpuzzlecuties.R
@@ -18,6 +17,7 @@ import com.batodev.jigsawpuzzlecuties.helpers.FirebaseHelper
 import com.batodev.jigsawpuzzlecuties.helpers.NeonBtnOnPressChangeLook
 import com.batodev.jigsawpuzzlecuties.helpers.RemoveBars
 import com.batodev.jigsawpuzzlecuties.helpers.SettingsHelper
+import com.google.android.material.snackbar.Snackbar
 import com.smb.glowbutton.NeonButton
 
 /**
@@ -107,7 +107,7 @@ class MainMenuActivity : AppCompatActivity() {
         if (!SettingsHelper.load(this).uncoveredPics.isEmpty()) {
             startActivity(Intent(this, GalleryActivity::class.java))
         } else {
-            Toast.makeText(this, R.string.main_menu_activity_play_to_uncover, Toast.LENGTH_SHORT).show()
+            Snackbar.make(findViewById(android.R.id.content), R.string.main_menu_activity_play_to_uncover, Snackbar.LENGTH_SHORT).show()
         }
     }
 
