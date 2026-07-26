@@ -1,7 +1,10 @@
 package com.batodev.jigsawpuzzlecuties.cut
 
 import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers.*
+import org.hamcrest.Matchers.equalTo
+import org.hamcrest.Matchers.`is`
+import org.hamcrest.Matchers.not
+import org.hamcrest.Matchers.notNullValue
 import org.junit.jupiter.api.Test
 
 class PuzzleCurvesGeneratorTest {
@@ -33,6 +36,10 @@ class PuzzleCurvesGeneratorTest {
         assertThat("SVG string 1 should not be null", svgString1, `is`(notNullValue()))
         assertThat("SVG string 2 should not be null", svgString2, `is`(notNullValue()))
         // Assert that the two generated SVG strings are different
-        assertThat("Generated SVGs should be different due to internal randomness", svgString1, `is`(not(equalTo(svgString2))))
+        assertThat(
+            "Generated SVGs should be different due to internal randomness",
+            svgString1,
+            `is`(not(equalTo(svgString2)))
+        )
     }
 }

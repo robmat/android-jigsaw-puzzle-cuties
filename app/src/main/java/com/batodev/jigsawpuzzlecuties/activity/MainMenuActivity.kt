@@ -24,6 +24,13 @@ import com.smb.glowbutton.NeonButton
  * The main menu activity of the application.
  */
 class MainMenuActivity : AppCompatActivity() {
+    companion object {
+        private const val MENU_ANIMATION_DELAY_MS = 500L
+        private const val MENU_BUTTON_INITIAL_SCALE = 0.5f
+        private const val MENU_BUTTON_ANIMATION_DURATION_MS = 500L
+        private const val MENU_BUTTON_STAGGER_DELAY_MS = 200L
+    }
+
     /**
      * Called when the activity is first created.
      * Initializes the UI, loads settings, and sets up event listeners for menu buttons.
@@ -59,10 +66,8 @@ class MainMenuActivity : AppCompatActivity() {
         // Delay the menu button animations
         Handler(Looper.getMainLooper()).postDelayed({
             animateMenuButtons(playButton, galleryButton, moreAppsButton, emberfoxLogo)
-        }, 500) // Corrected to 9.5 seconds delay
-
+        }, MENU_ANIMATION_DELAY_MS)
     }
-
 
     private fun animateMenuButtons(vararg views: View) {
         for ((index, view) in views.withIndex()) {
@@ -70,18 +75,18 @@ class MainMenuActivity : AppCompatActivity() {
             view.visibility = View.VISIBLE
 
             view.alpha = 0f
-            view.scaleX = 0.5f
-            view.scaleY = 0.5f
+            view.scaleX = MENU_BUTTON_INITIAL_SCALE
+            view.scaleY = MENU_BUTTON_INITIAL_SCALE
 
             val animator = AnimatorSet().apply {
                 playTogether(
                     ObjectAnimator.ofFloat(view, "alpha", 0f, 1f),
-                    ObjectAnimator.ofFloat(view, "scaleX", 0.5f, 1f),
-                    ObjectAnimator.ofFloat(view, "scaleY", 0.5f, 1f)
+                    ObjectAnimator.ofFloat(view, "scaleX", MENU_BUTTON_INITIAL_SCALE, 1f),
+                    ObjectAnimator.ofFloat(view, "scaleY", MENU_BUTTON_INITIAL_SCALE, 1f)
                 )
-                duration = 500
+                duration = MENU_BUTTON_ANIMATION_DURATION_MS
                 interpolator = AccelerateDecelerateInterpolator()
-                startDelay = (index * 200).toLong()
+                startDelay = index * MENU_BUTTON_STAGGER_DELAY_MS
             }
             animator.start()
         }
@@ -107,7 +112,11 @@ class MainMenuActivity : AppCompatActivity() {
         if (!SettingsHelper.load(this).uncoveredPics.isEmpty()) {
             startActivity(Intent(this, GalleryActivity::class.java))
         } else {
-            Snackbar.make(findViewById(android.R.id.content), R.string.main_menu_activity_play_to_uncover, Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(
+                findViewById(android.R.id.content),
+                R.string.main_menu_activity_play_to_uncover,
+                Snackbar.LENGTH_SHORT
+            ).show()
         }
     }
 
@@ -116,8 +125,12 @@ class MainMenuActivity : AppCompatActivity() {
      */
     fun moreApps() {
         FirebaseHelper.logButtonClick(this, "more_apps")
-        startActivity(Intent(Intent.ACTION_VIEW,
-            "https://play.google.com/store/apps/dev?id=8228670503574649511".toUri()))
+        startActivity(
+            Intent(
+                Intent.ACTION_VIEW,
+                "https://play.google.com/store/apps/dev?id=8228670503574649511".toUri()
+            )
+        )
     }
 
     /**
@@ -125,7 +138,11 @@ class MainMenuActivity : AppCompatActivity() {
      */
     fun playPart2() {
         FirebaseHelper.logButtonClick(this, "play_part_2")
-        startActivity(Intent(Intent.ACTION_VIEW,
-            "https://play.google.com/store/apps/details?id=com.batodev.jigsawpuzzlecuties3".toUri()))
+        startActivity(
+            Intent(
+                Intent.ACTION_VIEW,
+                "https://play.google.com/store/apps/details?id=com.batodev.jigsawpuzzlecuties3".toUri()
+            )
+        )
     }
 }

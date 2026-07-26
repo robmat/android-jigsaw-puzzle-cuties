@@ -18,6 +18,9 @@ private const val LAST_SET_DIFFICULTY_CUSTOM_WIDTH = "lastSetDifficultyCustomWid
 private const val SHOW_IMAGE_IN_BACKGROUND_OF_THE_PUZZLE = "showImageInBackgroundOfThePuzzle"
 private const val PLAY_SOUNDS = "playSounds"
 private const val HIGHSCORES = "highscores"
+private const val DEFAULT_DISPLAY_ADD_EVERY_X_PIC_VIEW = 5
+private const val DEFAULT_DIFFICULTY_HEIGHT = 5
+private const val DEFAULT_DIFFICULTY_WIDTH = 3
 
 /**
  * A helper object for saving and loading application settings.
@@ -57,9 +60,12 @@ object SettingsHelper {
     fun load(context: Context): Settings {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val settings = Settings()
-        settings.displayAddEveryXPicView = prefs.getInt(DISPLAY_ADD_EVERY_X_PIC_VIEW, 5)
-        settings.lastSetDifficultyCustomHeight = prefs.getInt(LAST_SET_DIFFICULTY_CUSTOM_HEIGHT, 5)
-        settings.lastSetDifficultyCustomWidth = prefs.getInt(LAST_SET_DIFFICULTY_CUSTOM_WIDTH, 3)
+        settings.displayAddEveryXPicView =
+            prefs.getInt(DISPLAY_ADD_EVERY_X_PIC_VIEW, DEFAULT_DISPLAY_ADD_EVERY_X_PIC_VIEW)
+        settings.lastSetDifficultyCustomHeight =
+            prefs.getInt(LAST_SET_DIFFICULTY_CUSTOM_HEIGHT, DEFAULT_DIFFICULTY_HEIGHT)
+        settings.lastSetDifficultyCustomWidth =
+            prefs.getInt(LAST_SET_DIFFICULTY_CUSTOM_WIDTH, DEFAULT_DIFFICULTY_WIDTH)
         settings.showGridInBackgroundOfThePuzzle = prefs.getBoolean(SHOW_GRID_IN_BACKGROUND_OF_THE_PUZZLE, true)
         settings.addCounter = prefs.getInt(ADD_COUNTER, 0)
         settings.lastSeenPic = prefs.getInt(LAST_SEEN_PIC, 0)

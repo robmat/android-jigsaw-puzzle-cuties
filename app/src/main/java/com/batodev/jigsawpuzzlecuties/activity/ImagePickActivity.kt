@@ -40,11 +40,12 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 
-
 private const val CAMERA_PERMISSION_REQUEST_CODE = 1
 private const val EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE = 2
 
 private const val DIFF_SPLIT = "X"
+private const val MIN_DIFFICULTY_DIM = 2
+private const val MAX_DIFFICULTY_DIM = 11
 
 /**
  * An activity for picking an image from the gallery or camera to use in the puzzle.
@@ -79,10 +80,11 @@ class ImagePickActivity : AppCompatActivity() {
             files = am.list("img") ?: arrayOf()
             val grid = findViewById<GridView>(R.id.grid)
             grid.adapter = ImageAdapter(this)
-            grid.onItemClickListener = OnItemClickListener { _: AdapterView<*>?, _: View?, itemClickedIndex: Int, _: Long ->
-                FirebaseHelper.logEvent(this, "image_picked_from_grid")
-                showStartGamePopup(itemClickedIndex, null)
-            }
+            grid.onItemClickListener =
+                OnItemClickListener { _: AdapterView<*>?, _: View?, itemClickedIndex: Int, _: Long ->
+                    FirebaseHelper.logEvent(this, "image_picked_from_grid")
+                    showStartGamePopup(itemClickedIndex, null)
+                }
         } catch (e: IOException) {
             FirebaseHelper.logException(this, "onCreate", e.message)
             Toast.makeText(this, e.localizedMessage, Toast.LENGTH_SHORT).show()
@@ -106,7 +108,6 @@ class ImagePickActivity : AppCompatActivity() {
         val inflater = getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
         val popupView: View = inflater.inflate(R.layout.start_game_popup, null)
 
-
         setUpDiffSpinner(popupView, settings)
         setUpCheckboxes(popupView, settings)
 
@@ -126,7 +127,7 @@ class ImagePickActivity : AppCompatActivity() {
             )
         }
         startButton.setOnTouchListener { view, event ->
-            NeonBtnOnPressChangeLook.neonBtnOnPressChangeLook(view, event, this@ImagePickActivity)
+            NeonBtnOnPressChangeLook.applyPressedLook(view, event, this@ImagePickActivity)
             true
         }
     }
@@ -171,7 +172,7 @@ class ImagePickActivity : AppCompatActivity() {
      */
     private fun setUpDiffSpinner(popupView: View, settings: Settings) {
         val dimensionsList = mutableListOf<String>()
-        for (i in 2..11) {
+        for (i in MIN_DIFFICULTY_DIM..MAX_DIFFICULTY_DIM) {
             val dimension = "${i * (i + 2)} (${i}$DIFF_SPLIT${i + 2})" // Generate the dimension string
             dimensionsList.add(dimension) // Add it to the list
         }
@@ -189,7 +190,9 @@ class ImagePickActivity : AppCompatActivity() {
         // For now, we'll keep the default dropdown item layout.
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         val spinner = popupView.findViewById<Spinner>(R.id.difficulty_spinner)
-        val selectionFromSettings = "${settings.lastSetDifficultyCustomWidth * settings.lastSetDifficultyCustomHeight} (${settings.lastSetDifficultyCustomWidth}$DIFF_SPLIT${settings.lastSetDifficultyCustomHeight})"
+        val selectionFromSettings =
+            "${settings.lastSetDifficultyCustomWidth * settings.lastSetDifficultyCustomHeight} " +
+                "(${settings.lastSetDifficultyCustomWidth}$DIFF_SPLIT${settings.lastSetDifficultyCustomHeight})"
         val indexOfSelection = dimensionsList.lastIndexOf(selectionFromSettings)
         spinner.adapter = adapter
         spinner.setSelection(indexOfSelection)
@@ -218,7 +221,11 @@ class ImagePickActivity : AppCompatActivity() {
      * @see SettingsHelper
      */
     private fun diffClicked(difficultyItemClicked: String, settings: Settings) {
-        FirebaseHelper.logEvent(this, "difficulty_changed", Bundle().apply { putString("difficulty", difficultyItemClicked) })
+        FirebaseHelper.logEvent(
+            this,
+            "difficulty_changed",
+            Bundle().apply { putString("difficulty", difficultyItemClicked) }
+        )
         val split = difficultyItemClicked.substring(
             difficultyItemClicked.indexOf("(") + 1,
             difficultyItemClicked.indexOf(")")
@@ -343,34 +350,37 @@ class ImagePickActivity : AppCompatActivity() {
 
     /**
      * Copies the selected image from the gallery to a temporary file and starts the game.
-     * @param it The URI of the selected image.
+     * @param uri The URI of the selected image.
      * @throws IOException if an I/O error occurs during file copying.
      */
-    private fun copyFileAndStartGame(it: Uri?) {
-        it?.let {
-            try {
-                contentResolver.openFileDescriptor(it, "r").use { parcelFileDescriptor ->
-                    val directory = File(filesDir, "camera_images")
-                    if (!directory.exists()) {
-                        directory.mkdirs()
-                    }
-                    val pathToSave = File(directory, "temp.jpg")
-                    parcelFileDescriptor?.fileDescriptor?.let { fd ->
-                        val inputStream = FileInputStream(fd)
-                        val outputStream = FileOutputStream(pathToSave)
-                        inputStream.use { input ->
-                            outputStream.use { output ->
-                                input.copyTo(output)
-                            }
-                        }
-                        outputStream.close()
-                        inputStream.close()
-                        showStartGamePopup(null, pathToSave.toString())
-                    }
+    private fun copyFileAndStartGame(uri: Uri?) {
+        uri ?: return
+        try {
+            contentResolver.openFileDescriptor(uri, "r").use { parcelFileDescriptor ->
+                val fd = parcelFileDescriptor?.fileDescriptor ?: return@use
+                val directory = File(filesDir, "camera_images")
+                if (!directory.exists()) {
+                    directory.mkdirs()
                 }
-            } catch (e: IOException) {
-                FirebaseHelper.logException(this, "copyFileAndStartGame", e.message)
-                Toast.makeText(this, e.localizedMessage, Toast.LENGTH_SHORT).show()
+                val pathToSave = File(directory, "temp.jpg")
+                copyFdToFile(fd, pathToSave)
+                showStartGamePopup(null, pathToSave.toString())
+            }
+        } catch (e: IOException) {
+            FirebaseHelper.logException(this, "copyFileAndStartGame", e.message)
+            Toast.makeText(this, e.localizedMessage, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    /**
+     * Copies the contents of a file descriptor to the given destination file.
+     * @param fd The source {@link java.io.FileDescriptor} to read from.
+     * @param destination The destination {@link File} to write to.
+     */
+    private fun copyFdToFile(fd: java.io.FileDescriptor, destination: File) {
+        FileInputStream(fd).use { input ->
+            FileOutputStream(destination).use { output ->
+                input.copyTo(output)
             }
         }
     }
@@ -405,7 +415,8 @@ class ImagePickActivity : AppCompatActivity() {
 
     /**
      * Requests the specified external storage permission.
-     * @param readExternalStorage The permission string to request (e.g., {@link Manifest.permission#READ_EXTERNAL_STORAGE}).
+     * @param readExternalStorage The permission string to request
+     *     (e.g., {@link Manifest.permission#READ_EXTERNAL_STORAGE}).
      */
     private fun askForReadExternalImagesPermission(readExternalStorage: String) {
         if (checkSelfPermission(

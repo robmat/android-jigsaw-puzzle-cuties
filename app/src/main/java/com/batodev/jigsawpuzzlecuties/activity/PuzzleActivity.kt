@@ -43,6 +43,12 @@ import java.util.Locale
  * The main activity for the puzzle game.
  */
 class PuzzleActivity : AppCompatActivity(), PuzzleProgressListener {
+    companion object {
+        private const val SECONDS_PER_MINUTE = 60
+        private const val MAX_HIGH_SCORES = 10
+        private const val HIGH_SCORE_TEXT_SIZE_SP = 16f
+    }
+
     private var imageFileName: String? = null
     private val handler: Handler = Handler(Looper.getMainLooper())
     private val rateHelper: AppRatingHelper = AppRatingHelper(this)
@@ -113,7 +119,7 @@ class PuzzleActivity : AppCompatActivity(), PuzzleProgressListener {
             }
             it.visibility = View.GONE
             it.setOnTouchListener { view, event ->
-                NeonBtnOnPressChangeLook.neonBtnOnPressChangeLook(
+                NeonBtnOnPressChangeLook.applyPressedLook(
                     view,
                     event,
                     this@PuzzleActivity
@@ -180,7 +186,7 @@ class PuzzleActivity : AppCompatActivity(), PuzzleProgressListener {
         findViewById<NeonButton>(R.id.puzzle_activity_play_again).let {
             it.visibility = View.VISIBLE
             it.setOnTouchListener { view, event ->
-                NeonBtnOnPressChangeLook.neonBtnOnPressChangeLook(view, event, this@PuzzleActivity)
+                NeonBtnOnPressChangeLook.applyPressedLook(view, event, this@PuzzleActivity)
                 true
             }
         }
@@ -209,10 +215,10 @@ class PuzzleActivity : AppCompatActivity(), PuzzleProgressListener {
         val newScoreString = String.format(
             Locale.getDefault(),
             "%02d:%02d",
-            currentScoreInSeconds / 60,
-            currentScoreInSeconds % 60
+            currentScoreInSeconds / SECONDS_PER_MINUTE,
+            currentScoreInSeconds % SECONDS_PER_MINUTE
         ) +
-                " - " + dateFormat.format(Date())
+            " - " + dateFormat.format(Date())
 
         highScores.add(newScoreString)
 
@@ -220,17 +226,17 @@ class PuzzleActivity : AppCompatActivity(), PuzzleProgressListener {
         highScores.sortBy {
             val parts = it.split(" - ")
             val timeParts = parts[0].split(":")
-            timeParts[0].toInt() * 60 + timeParts[1].toInt()
+            timeParts[0].toInt() * SECONDS_PER_MINUTE + timeParts[1].toInt()
         }
-        while (highScores.size > 10) {
-            highScores.removeAt(10)
+        while (highScores.size > MAX_HIGH_SCORES) {
+            highScores.removeAt(MAX_HIGH_SCORES)
         }
 
         SettingsHelper.save(this, settings)
 
         showHighScorePopup(difficultyKey, highScores, highScores.indexOf(newScoreString))
 
-        if (highScores.indexOf(newScoreString) <= 10 && highScores.indexOf(newScoreString) != -1) {
+        if (highScores.indexOf(newScoreString) <= MAX_HIGH_SCORES && highScores.indexOf(newScoreString) != -1) {
             FirebaseHelper.logEvent(this, "new_highscore")
             Toast.makeText(this, getString(R.string.congratulations_top_10), Toast.LENGTH_LONG)
                 .show()
@@ -264,7 +270,7 @@ class PuzzleActivity : AppCompatActivity(), PuzzleProgressListener {
             val scoreTextView = TextView(this)
             scoreTextView.setTextColor(resources.getColor(R.color.white, null))
             scoreTextView.text = "${index + 1}. $scoreString"
-            scoreTextView.textSize = 16f // Use 16f for sp
+            scoreTextView.textSize = HIGH_SCORE_TEXT_SIZE_SP
             if (index == newScoreIndex) {
                 scoreTextView.setTypeface(null, Typeface.BOLD)
             }
@@ -285,7 +291,7 @@ class PuzzleActivity : AppCompatActivity(), PuzzleProgressListener {
                 alertDialog.dismiss()
             }
             it.setOnTouchListener { view, event ->
-                NeonBtnOnPressChangeLook.neonBtnOnPressChangeLook(view, event, this@PuzzleActivity)
+                NeonBtnOnPressChangeLook.applyPressedLook(view, event, this@PuzzleActivity)
                 true
             }
         }

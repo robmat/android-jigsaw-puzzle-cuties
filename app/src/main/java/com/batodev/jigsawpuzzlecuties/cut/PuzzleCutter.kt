@@ -21,38 +21,46 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Consumer
 
 /**
+ * The parameters required to cut a source image into puzzle pieces.
+ * @param sourceImage The {@link Bitmap} of the original image to be cut.
+ * @param rows The number of rows for the puzzle grid.
+ * @param cols The number of columns for the puzzle grid.
+ * @param svgString The SVG string defining the puzzle piece shapes.
+ * @param imageView The {@link ImageView} where the puzzle pieces will be displayed.
+ * @param puzzleProgressListener A listener to report progress updates and completion.
+ * @param pieces A list of {@link PuzzlePiece} objects to populate with the cut bitmaps.
+ */
+data class PuzzleCutRequest(
+    val sourceImage: Bitmap,
+    val rows: Int,
+    val cols: Int,
+    val svgString: String?,
+    val imageView: ImageView,
+    val puzzleProgressListener: PuzzleProgressListener,
+    val pieces: List<PuzzlePiece>,
+)
+
+/**
  * An object for cutting the puzzle pieces from the source image.
  */
 object PuzzleCutter {
+    private const val AWAIT_TERMINATION_HOURS = 1L
     private val numProcessors = Runtime.getRuntime().availableProcessors()
+
     /**
      * Cuts the source image into puzzle pieces based on the provided SVG string.
      * This operation is performed asynchronously using a fixed thread pool.
-     * @param sourceImage The {@link Bitmap} of the original image to be cut.
-     * @param rows The number of rows for the puzzle grid.
-     * @param cols The number of columns for the puzzle grid.
-     * @param svgString The SVG string defining the puzzle piece shapes.
-     * @param imageView The {@link ImageView} where the puzzle pieces will be displayed.
-     * @param puzzleProgressListener A listener to report progress updates and completion.
-     * @param pieces A list of {@link PuzzlePiece} objects to populate with the cut bitmaps.
+     * @param request The {@link PuzzleCutRequest} describing the image, grid and destination pieces.
      * @return A list of {@link Bitmap} objects, each representing a cut puzzle piece.
      * @throws SVGParseException if the provided SVG string is invalid.
      */
     @Throws(SVGParseException::class)
-    fun cut(
-        sourceImage: Bitmap,
-        rows: Int,
-        cols: Int,
-        svgString: String?,
-        imageView: ImageView,
-        puzzleProgressListener: PuzzleProgressListener,
-        pieces: List<PuzzlePiece>,
-    ): List<Bitmap> {
+    fun cut(request: PuzzleCutRequest): List<Bitmap> {
         val result: MutableList<Bitmap> = ArrayList()
         val startTime = System.currentTimeMillis()
-        val svg = SVG.getFromString(svgString)
-        val width = sourceImage.width
-        val height = sourceImage.height
+        val svg = SVG.getFromString(request.svgString)
+        val width = request.sourceImage.width
+        val height = request.sourceImage.height
         val puzzleGridBitmap = createBitmap(width, height)
         val puzzleGridCanvas = Canvas(puzzleGridBitmap)
         val whiteFill = Paint()
@@ -61,57 +69,94 @@ object PuzzleCutter {
         puzzleGridCanvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), whiteFill)
         svg.renderToCanvas(puzzleGridCanvas)
         val executor = Executors.newFixedThreadPool(numProcessors)
-        val progressCounter = AtomicInteger(0)
-        val puzzlesCenterPoints = divideImage(puzzleGridBitmap, rows, cols)
+        val cuttingContext = CuttingContext(
+            sourceImage = request.sourceImage,
+            puzzleGridBitmap = puzzleGridBitmap,
+            output = PieceOutput(request.imageView, request.puzzleProgressListener),
+            tracking = ProgressTracking(result, request.rows * request.cols),
+            startTime = startTime,
+        )
+        val puzzlesCenterPoints = divideImage(puzzleGridBitmap, request.rows, request.cols)
         var puzzleIndex = 0
-        for (rowIndex in 0 until rows) {
-            for (colIndex in 0 until cols) {
-                val piece = pieces[puzzleIndex++]
-                val puzzleCutJob = Runnable {
-                    val puzzleCenter = puzzlesCenterPoints[rowIndex][colIndex]
-                    val reg = floodFill(puzzleGridBitmap, puzzleCenter!!.x, puzzleCenter.y)
-                    val regionWidth = reg.width
-                    val regionHeight = reg.height
-                    val regionMinX = reg.minX
-                    val regionMinY = reg.minY
-                    val puzzleBitmap = createBitmap(regionWidth + 1, regionHeight + 1)
-                    println("Flood fill took: " + (System.currentTimeMillis() - startTime) + "ms")
-                    reg.points.forEach(Consumer { (x1, y1): Point ->
-                        val rgbSource = sourceImage[x1, y1]
-                        val x = x1 - regionMinX
-                        val y = y1 - regionMinY
-                        puzzleBitmap[x, y] = rgbSource
-                    })
-                    result.add(puzzleBitmap)
-                    val setPuzzleImageAndPositions = Runnable {
-                        piece.setImageBitmap(puzzleBitmap)
-                        piece.pieceWidth = regionWidth
-                        piece.pieceHeight = regionHeight
-                        piece.xCoord = regionMinX + imageView.left
-                        piece.yCoord = regionMinY + imageView.top
-                    }
-                    puzzleProgressListener.postToHandler(setPuzzleImageAndPositions)
-                    val progress = progressCounter.incrementAndGet()
-                    puzzleProgressListener.postToHandler {
-                        puzzleProgressListener.onProgressUpdate(progress, rows * cols)
-                    }
-                }
-                executor.submit(puzzleCutJob)
+        for (rowIndex in 0 until request.rows) {
+            for (colIndex in 0 until request.cols) {
+                val piece = request.pieces[puzzleIndex++]
+                val puzzleCenter = puzzlesCenterPoints[rowIndex][colIndex]!!
+                executor.submit(cutPieceJob(cuttingContext, puzzleCenter, piece))
                 println("Filling target took: " + (System.currentTimeMillis() - startTime) + "ms")
             }
         }
         executor.shutdown()
+        awaitCompletionAsync(executor, request.imageView, request.puzzleProgressListener)
+        return result
+    }
+
+    private class PieceOutput(
+        val imageView: ImageView,
+        val puzzleProgressListener: PuzzleProgressListener,
+    )
+
+    private class ProgressTracking(
+        val result: MutableList<Bitmap>,
+        val totalPieces: Int,
+        val progressCounter: AtomicInteger = AtomicInteger(0),
+    )
+
+    private class CuttingContext(
+        val sourceImage: Bitmap,
+        val puzzleGridBitmap: Bitmap,
+        val output: PieceOutput,
+        val tracking: ProgressTracking,
+        val startTime: Long,
+    )
+
+    private fun cutPieceJob(
+        context: CuttingContext,
+        puzzleCenter: Point,
+        piece: PuzzlePiece,
+    ) = Runnable {
+        val reg = floodFill(context.puzzleGridBitmap, puzzleCenter.x, puzzleCenter.y)
+        val regionWidth = reg.width
+        val regionHeight = reg.height
+        val regionMinX = reg.minX
+        val regionMinY = reg.minY
+        val puzzleBitmap = createBitmap(regionWidth + 1, regionHeight + 1)
+        println("Flood fill took: " + (System.currentTimeMillis() - context.startTime) + "ms")
+        reg.points.forEach(
+            Consumer { (x1, y1): Point ->
+                val rgbSource = context.sourceImage[x1, y1]
+                puzzleBitmap[x1 - regionMinX, y1 - regionMinY] = rgbSource
+            }
+        )
+        context.tracking.result.add(puzzleBitmap)
+        context.output.puzzleProgressListener.postToHandler {
+            piece.setImageBitmap(puzzleBitmap)
+            piece.pieceWidth = regionWidth
+            piece.pieceHeight = regionHeight
+            piece.xCoord = regionMinX + context.output.imageView.left
+            piece.yCoord = regionMinY + context.output.imageView.top
+        }
+        val progress = context.tracking.progressCounter.incrementAndGet()
+        context.output.puzzleProgressListener.postToHandler {
+            context.output.puzzleProgressListener.onProgressUpdate(progress, context.tracking.totalPieces)
+        }
+    }
+
+    private fun awaitCompletionAsync(
+        executor: java.util.concurrent.ExecutorService,
+        imageView: ImageView,
+        puzzleProgressListener: PuzzleProgressListener,
+    ) {
         Thread {
             try {
-                val terminated = executor.awaitTermination(1, TimeUnit.HOURS)
+                val terminated = executor.awaitTermination(AWAIT_TERMINATION_HOURS, TimeUnit.HOURS)
                 println(terminated)
             } catch (e: InterruptedException) {
                 FirebaseHelper.logException(imageView.context, "PuzzleCutter.cut", e.message)
-                throw RuntimeException(e)
+                Thread.currentThread().interrupt()
             }
             puzzleProgressListener.postToHandler { puzzleProgressListener.onCuttingFinished() }
         }.start()
-        return result
     }
 
     /**
@@ -128,13 +173,8 @@ object PuzzleCutter {
         val width = image.width
         val height = image.height
 
-        // Check if starting point is within image bounds
-        if (startX < 0 || startY < 0 || startX >= width || startY >= height) {
-            return reg
-        }
-
-        // Check if starting point color is same as target color
-        if (image[startX, startY] != Color.WHITE) {
+        // Bail out if the starting point is out of bounds or not the fill color
+        if (isOutOfBounds(startX, startY, width, height) || image[startX, startY] != Color.WHITE) {
             return reg
         }
 
@@ -172,6 +212,9 @@ object PuzzleCutter {
         }
         return reg
     }
+
+    private fun isOutOfBounds(x: Int, y: Int, width: Int, height: Int): Boolean =
+        x < 0 || y < 0 || x >= width || y >= height
 
     /**
      * Divides an image into a grid and calculates the center point of each cell.
