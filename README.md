@@ -26,6 +26,11 @@ The puzzle pieces are dynamically generated using a sophisticated cutting algori
 
 The `PuzzleCutter` then uses these SVG paths to slice the source image. It employs a flood fill algorithm to accurately define the bitmap for each individual piece, resulting in a clean and precise cut. This advanced technique guarantees a different cut for every game and realistic look.
 
+## How to run
+
+1. Clone [release-tools](https://github.com/robmat/release-tools) as a sibling directory (`git clone https://github.com/robmat/release-tools.git ../release-tools`) — this repo's Gradle build pulls shared build logic and the version catalog from it via `includeBuild`.
+2. Import into android studio
+
 ## License
 
 **Warning:** This project is licensed under the **GNU General Public License v3.0**.
