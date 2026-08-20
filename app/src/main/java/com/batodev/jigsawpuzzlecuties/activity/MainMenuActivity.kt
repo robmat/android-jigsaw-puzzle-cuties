@@ -78,16 +78,17 @@ class MainMenuActivity : AppCompatActivity() {
             view.scaleX = MENU_BUTTON_INITIAL_SCALE
             view.scaleY = MENU_BUTTON_INITIAL_SCALE
 
-            val animator = AnimatorSet().apply {
-                playTogether(
-                    ObjectAnimator.ofFloat(view, "alpha", 0f, 1f),
-                    ObjectAnimator.ofFloat(view, "scaleX", MENU_BUTTON_INITIAL_SCALE, 1f),
-                    ObjectAnimator.ofFloat(view, "scaleY", MENU_BUTTON_INITIAL_SCALE, 1f)
-                )
-                duration = MENU_BUTTON_ANIMATION_DURATION_MS
-                interpolator = AccelerateDecelerateInterpolator()
-                startDelay = index * MENU_BUTTON_STAGGER_DELAY_MS
-            }
+            val animator =
+                AnimatorSet().apply {
+                    playTogether(
+                        ObjectAnimator.ofFloat(view, "alpha", 0f, 1f),
+                        ObjectAnimator.ofFloat(view, "scaleX", MENU_BUTTON_INITIAL_SCALE, 1f),
+                        ObjectAnimator.ofFloat(view, "scaleY", MENU_BUTTON_INITIAL_SCALE, 1f),
+                    )
+                    duration = MENU_BUTTON_ANIMATION_DURATION_MS
+                    interpolator = AccelerateDecelerateInterpolator()
+                    startDelay = index * MENU_BUTTON_STAGGER_DELAY_MS
+                }
             animator.start()
         }
     }
@@ -112,11 +113,12 @@ class MainMenuActivity : AppCompatActivity() {
         if (!SettingsHelper.load(this).uncoveredPics.isEmpty()) {
             startActivity(Intent(this, GalleryActivity::class.java))
         } else {
-            Snackbar.make(
-                findViewById(android.R.id.content),
-                R.string.main_menu_activity_play_to_uncover,
-                Snackbar.LENGTH_SHORT
-            ).show()
+            Snackbar
+                .make(
+                    findViewById(android.R.id.content),
+                    R.string.main_menu_activity_play_to_uncover,
+                    Snackbar.LENGTH_SHORT,
+                ).show()
         }
     }
 
@@ -128,8 +130,8 @@ class MainMenuActivity : AppCompatActivity() {
         startActivity(
             Intent(
                 Intent.ACTION_VIEW,
-                "https://play.google.com/store/apps/dev?id=8228670503574649511".toUri()
-            )
+                "https://play.google.com/store/apps/dev?id=8228670503574649511".toUri(),
+            ),
         )
     }
 
@@ -141,8 +143,8 @@ class MainMenuActivity : AppCompatActivity() {
         startActivity(
             Intent(
                 Intent.ACTION_VIEW,
-                "https://play.google.com/store/apps/details?id=com.batodev.jigsawpuzzlecuties3".toUri()
-            )
+                "https://play.google.com/store/apps/details?id=com.batodev.jigsawpuzzlecuties3".toUri(),
+            ),
         )
     }
 }

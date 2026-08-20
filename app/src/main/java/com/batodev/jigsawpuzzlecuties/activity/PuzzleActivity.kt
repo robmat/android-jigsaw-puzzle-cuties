@@ -42,7 +42,9 @@ import java.util.Locale
 /**
  * The main activity for the puzzle game.
  */
-class PuzzleActivity : AppCompatActivity(), PuzzleProgressListener {
+class PuzzleActivity :
+    AppCompatActivity(),
+    PuzzleProgressListener {
     companion object {
         private const val SECONDS_PER_MINUTE = 60
         private const val MAX_HIGH_SCORES = 10
@@ -103,12 +105,13 @@ class PuzzleActivity : AppCompatActivity(), PuzzleProgressListener {
 
         imageView.post {
             val imageLoader = ImageLoader(imageView)
-            val bitmap = if (imageFileName != null) {
-                imageLoader.setPicFromAsset(imageFileName!!, assets)
-            } else {
-                val photoPath = File(File(filesDir, "camera_images"), "temp.jpg").toString()
-                imageLoader.setPicFromPath(photoPath)
-            }
+            val bitmap =
+                if (imageFileName != null) {
+                    imageLoader.setPicFromAsset(imageFileName!!, assets)
+                } else {
+                    val photoPath = File(File(filesDir, "camera_images"), "temp.jpg").toString()
+                    imageLoader.setPicFromPath(photoPath)
+                }
             puzzleGameManager.createPuzzle(bitmap, puzzlesWidth, puzzlesHeight)
         }
 
@@ -122,7 +125,7 @@ class PuzzleActivity : AppCompatActivity(), PuzzleProgressListener {
                 NeonBtnOnPressChangeLook.applyPressedLook(
                     view,
                     event,
-                    this@PuzzleActivity
+                    this@PuzzleActivity,
                 )
                 true
             }
@@ -136,7 +139,10 @@ class PuzzleActivity : AppCompatActivity(), PuzzleProgressListener {
      * @param progress The current progress value.
      * @param max The maximum progress value.
      */
-    override fun onProgressUpdate(progress: Int, max: Int) {
+    override fun onProgressUpdate(
+        progress: Int,
+        max: Int,
+    ) {
         handler.post {
             val progressBar = findViewById<ProgressBar>(R.id.progressBar)
             progressBar.max = max
@@ -171,7 +177,11 @@ class PuzzleActivity : AppCompatActivity(), PuzzleProgressListener {
     fun onGameOver() {
         FirebaseHelper.logEvent(this, "game_over")
         val konfetti = findViewById<ImageView>(R.id.konfettiView)
-        Glide.with(konfetti).asGif().load(R.drawable.confetti2).into(konfetti)
+        Glide
+            .with(konfetti)
+            .asGif()
+            .load(R.drawable.confetti2)
+            .into(konfetti)
         konfetti.visibility = View.VISIBLE
         val settings = SettingsHelper.load(this)
         imageFileName?.let {
@@ -207,18 +217,23 @@ class PuzzleActivity : AppCompatActivity(), PuzzleProgressListener {
      * @see Settings
      * @see SettingsHelper
      */
-    private fun updateAndShowHighScores(newTime: Int, difficultyKey: String, settings: Settings) {
+    private fun updateAndShowHighScores(
+        newTime: Int,
+        difficultyKey: String,
+        settings: Settings,
+    ) {
         val highScores = settings.highscores.getOrPut(difficultyKey) { mutableListOf() }
 
         val currentScoreInSeconds = newTime
         val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
-        val newScoreString = String.format(
-            Locale.getDefault(),
-            "%02d:%02d",
-            currentScoreInSeconds / SECONDS_PER_MINUTE,
-            currentScoreInSeconds % SECONDS_PER_MINUTE
-        ) +
-            " - " + dateFormat.format(Date())
+        val newScoreString =
+            String.format(
+                Locale.getDefault(),
+                "%02d:%02d",
+                currentScoreInSeconds / SECONDS_PER_MINUTE,
+                currentScoreInSeconds % SECONDS_PER_MINUTE,
+            ) +
+                " - " + dateFormat.format(Date())
 
         highScores.add(newScoreString)
 
@@ -238,7 +253,8 @@ class PuzzleActivity : AppCompatActivity(), PuzzleProgressListener {
 
         if (highScores.indexOf(newScoreString) <= MAX_HIGH_SCORES && highScores.indexOf(newScoreString) != -1) {
             FirebaseHelper.logEvent(this, "new_highscore")
-            Toast.makeText(this, getString(R.string.congratulations_top_10), Toast.LENGTH_LONG)
+            Toast
+                .makeText(this, getString(R.string.congratulations_top_10), Toast.LENGTH_LONG)
                 .show()
         }
     }

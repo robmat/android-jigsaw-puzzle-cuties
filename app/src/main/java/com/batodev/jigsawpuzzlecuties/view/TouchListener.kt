@@ -25,7 +25,7 @@ import kotlin.math.sqrt
  */
 class TouchListener(
     private val puzzleGameManager: PuzzleGameManager,
-    private val zoomableLayout: ZoomLayout
+    private val zoomableLayout: ZoomLayout,
 ) : OnTouchListener {
     companion object {
         private const val TOLERANCE_DIVISOR = 10
@@ -44,12 +44,16 @@ class TouchListener(
      * @see PuzzlePiece
      * @see PuzzleGameManager#checkGameOver()
      */
-    override fun onTouch(view: View, motionEvent: MotionEvent): Boolean {
+    override fun onTouch(
+        view: View,
+        motionEvent: MotionEvent,
+    ): Boolean {
         val x = motionEvent.rawX / zoomableLayout.zoom
         val y = motionEvent.rawY / zoomableLayout.zoom
-        val tolerance = sqrt(
-            view.width.toDouble().pow(2.0) + view.height.toDouble().pow(2.0)
-        ) / TOLERANCE_DIVISOR
+        val tolerance =
+            sqrt(
+                view.width.toDouble().pow(2.0) + view.height.toDouble().pow(2.0),
+            ) / TOLERANCE_DIVISOR
         val piece = view as PuzzlePiece
         if (!piece.canMove) {
             return true
@@ -68,7 +72,7 @@ class TouchListener(
                 Log.v(
                     TouchListener::class.simpleName,
                     "ACTION_MOVE: x=$x, y=$y, xDelta=$xDelta, yDelta=$yDelta, " +
-                        "leftMargin=${lParams.leftMargin}, topMargin=${lParams.topMargin}"
+                        "leftMargin=${lParams.leftMargin}, topMargin=${lParams.topMargin}",
                 )
                 lParams.leftMargin = (x - xDelta).toInt()
                 lParams.topMargin = (y - yDelta).toInt()
@@ -81,7 +85,7 @@ class TouchListener(
                 Log.v(
                     TouchListener::class.simpleName,
                     "ACTION_UP: x=$x, y=$y, xDelta=$xDelta, yDelta=$yDelta, " +
-                        "xDiff=$xDiff, yDiff=$yDiff, tolerance=$tolerance"
+                        "xDiff=$xDiff, yDiff=$yDiff, tolerance=$tolerance",
                 )
                 if (xDiff <= tolerance && yDiff <= tolerance) {
                     FirebaseHelper.logEvent(view.context, "piece_placed_correctly")
@@ -105,28 +109,34 @@ class TouchListener(
      * @param piece The {@link PuzzlePiece} being placed.
      * @param lParams The piece's layout params, updated once the animation ends.
      */
-    private fun snapPieceIntoPlace(view: View, piece: PuzzlePiece, lParams: RelativeLayout.LayoutParams) {
+    private fun snapPieceIntoPlace(
+        view: View,
+        piece: PuzzlePiece,
+        lParams: RelativeLayout.LayoutParams,
+    ) {
         val animatorSet = AnimatorSet()
         animatorSet.playTogether(
             ObjectAnimator.ofFloat(view, View.X, piece.xCoord.toFloat()),
-            ObjectAnimator.ofFloat(view, View.Y, piece.yCoord.toFloat())
+            ObjectAnimator.ofFloat(view, View.Y, piece.yCoord.toFloat()),
         )
         animatorSet.interpolator = AccelerateDecelerateInterpolator()
         animatorSet.duration = SNAP_ANIMATION_DURATION_MS // A quick snap
-        animatorSet.addListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationEnd(animation: Animator) {
-                // Update layout params to finalize position
-                lParams.leftMargin = piece.xCoord
-                lParams.topMargin = piece.yCoord
-                view.layoutParams = lParams
+        animatorSet.addListener(
+            object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    // Update layout params to finalize position
+                    lParams.leftMargin = piece.xCoord
+                    lParams.topMargin = piece.yCoord
+                    view.layoutParams = lParams
 
-                // Reset translation properties modified by the animator
-                view.translationX = 0f
-                view.translationY = 0f
+                    // Reset translation properties modified by the animator
+                    view.translationX = 0f
+                    view.translationY = 0f
 
-                puzzleGameManager.checkGameOver()
-            }
-        })
+                    puzzleGameManager.checkGameOver()
+                }
+            },
+        )
         animatorSet.start()
     }
 

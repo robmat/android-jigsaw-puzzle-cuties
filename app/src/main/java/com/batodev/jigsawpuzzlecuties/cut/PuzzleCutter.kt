@@ -69,13 +69,14 @@ object PuzzleCutter {
         puzzleGridCanvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), whiteFill)
         svg.renderToCanvas(puzzleGridCanvas)
         val executor = Executors.newFixedThreadPool(numProcessors)
-        val cuttingContext = CuttingContext(
-            sourceImage = request.sourceImage,
-            puzzleGridBitmap = puzzleGridBitmap,
-            output = PieceOutput(request.imageView, request.puzzleProgressListener),
-            tracking = ProgressTracking(result, request.rows * request.cols),
-            startTime = startTime,
-        )
+        val cuttingContext =
+            CuttingContext(
+                sourceImage = request.sourceImage,
+                puzzleGridBitmap = puzzleGridBitmap,
+                output = PieceOutput(request.imageView, request.puzzleProgressListener),
+                tracking = ProgressTracking(result, request.rows * request.cols),
+                startTime = startTime,
+            )
         val puzzlesCenterPoints = divideImage(puzzleGridBitmap, request.rows, request.cols)
         var puzzleIndex = 0
         for (rowIndex in 0 until request.rows) {
@@ -126,7 +127,7 @@ object PuzzleCutter {
             Consumer { (x1, y1): Point ->
                 val rgbSource = context.sourceImage[x1, y1]
                 puzzleBitmap[x1 - regionMinX, y1 - regionMinY] = rgbSource
-            }
+            },
         )
         context.tracking.result.add(puzzleBitmap)
         context.output.puzzleProgressListener.postToHandler {
@@ -167,7 +168,11 @@ object PuzzleCutter {
      * @param startY The starting Y-coordinate for the flood fill.
      * @return A {@link Region} object containing all points within the filled area.
      */
-    private fun floodFill(image: Bitmap, startX: Int, startY: Int): Region {
+    private fun floodFill(
+        image: Bitmap,
+        startX: Int,
+        startY: Int,
+    ): Region {
         val reg = Region(ArrayList())
         val queue: Queue<Point> = ArrayDeque()
         val width = image.width
@@ -213,8 +218,12 @@ object PuzzleCutter {
         return reg
     }
 
-    private fun isOutOfBounds(x: Int, y: Int, width: Int, height: Int): Boolean =
-        x < 0 || y < 0 || x >= width || y >= height
+    private fun isOutOfBounds(
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int,
+    ): Boolean = x < 0 || y < 0 || x >= width || y >= height
 
     /**
      * Divides an image into a grid and calculates the center point of each cell.
@@ -223,7 +232,11 @@ object PuzzleCutter {
      * @param cols The number of columns in the grid.
      * @return A 2D array of {@link Point} objects, where each point represents the center of a grid cell.
      */
-    private fun divideImage(image: Bitmap, rows: Int, cols: Int): Array<Array<Point?>> {
+    private fun divideImage(
+        image: Bitmap,
+        rows: Int,
+        cols: Int,
+    ): Array<Array<Point?>> {
         val width = image.width
         val height = image.height
 
@@ -249,24 +262,23 @@ object PuzzleCutter {
      * @param x The X-coordinate of the point.
      * @param y The Y-coordinate of the point.
      */
-    internal class Point(var x: Int, var y: Int) {
+    internal class Point(
+        var x: Int,
+        var y: Int,
+    ) {
         /**
          * Returns the X-coordinate of the point.
          * This is a component function for destructuring declarations.
          * @return The X-coordinate.
          */
-        operator fun component1(): Int {
-            return x
-        }
+        operator fun component1(): Int = x
 
         /**
          * Returns the Y-coordinate of the point.
          * This is a component function for destructuring declarations.
          * @return The Y-coordinate.
          */
-        operator fun component2(): Int {
-            return y
-        }
+        operator fun component2(): Int = y
     }
 
     /**
@@ -274,50 +286,68 @@ object PuzzleCutter {
      * Provides methods to calculate the bounding box (min/max X/Y, width, height) of the region.
      * @param points The mutable collection of points that define the region.
      */
-    internal class Region(val points: MutableCollection<Point>) {
+    internal class Region(
+        val points: MutableCollection<Point>,
+    ) {
         /**
          * Gets the maximum X-coordinate among all points in the region.
          * @return The maximum X-coordinate.
          */
         private val maxX: Int
-            get() = points.stream().map(Point::x).max { obj: Int, anotherInteger: Int? ->
-                obj.compareTo(
-                    anotherInteger!!
-                )
-            }.orElse(0)
+            get() =
+                points
+                    .stream()
+                    .map(Point::x)
+                    .max { obj: Int, anotherInteger: Int? ->
+                        obj.compareTo(
+                            anotherInteger!!,
+                        )
+                    }.orElse(0)
 
         /**
          * Gets the minimum X-coordinate among all points in the region.
          * @return The minimum X-coordinate.
          */
         val minX: Int
-            get() = points.stream().map(Point::x).min { obj: Int, anotherInteger: Int? ->
-                obj.compareTo(
-                    anotherInteger!!
-                )
-            }.orElse(0)
+            get() =
+                points
+                    .stream()
+                    .map(Point::x)
+                    .min { obj: Int, anotherInteger: Int? ->
+                        obj.compareTo(
+                            anotherInteger!!,
+                        )
+                    }.orElse(0)
 
         /**
          * Gets the maximum Y-coordinate among all points in the region.
          * @return The maximum Y-coordinate.
          */
         private val maxY: Int
-            get() = points.stream().map(Point::y).max { obj: Int, anotherInteger: Int? ->
-                obj.compareTo(
-                    anotherInteger!!
-                )
-            }.orElse(0)
+            get() =
+                points
+                    .stream()
+                    .map(Point::y)
+                    .max { obj: Int, anotherInteger: Int? ->
+                        obj.compareTo(
+                            anotherInteger!!,
+                        )
+                    }.orElse(0)
 
         /**
          * Gets the minimum Y-coordinate among all points in the region.
          * @return The minimum Y-coordinate.
          */
         val minY: Int
-            get() = points.stream().map(Point::y).min { obj: Int, anotherInteger: Int? ->
-                obj.compareTo(
-                    anotherInteger!!
-                )
-            }.orElse(0)
+            get() =
+                points
+                    .stream()
+                    .map(Point::y)
+                    .min { obj: Int, anotherInteger: Int? ->
+                        obj.compareTo(
+                            anotherInteger!!,
+                        )
+                    }.orElse(0)
 
         /**
          * Calculates the width of the bounding box of the region.

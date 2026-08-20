@@ -9,7 +9,9 @@ import androidx.appcompat.widget.AppCompatImageView
  * such as its correct coordinates, dimensions, and movability.
  * @param context The context in which the view is running.
  */
-class PuzzlePiece(context: Context?) : AppCompatImageView(context!!) {
+class PuzzlePiece(
+    context: Context?,
+) : AppCompatImageView(context!!) {
     /**
      * The correct X-coordinate of the puzzle piece on the game board.
      */
