@@ -4,6 +4,8 @@ import android.app.Activity
 import android.util.Log
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 
@@ -14,6 +16,19 @@ const val AD_ID = "ca-app-pub-9667420067790140/7731686137"
  */
 object AdHelper {
     private var ad: InterstitialAd? = null
+
+    /**
+     * Play's Families policy: an app whose target audience includes children may only show ads
+     * suitable for its content rating. Without this every request was unrestricted, so the app
+     * could be served mature ads - the reason 3.5 was rejected. Applies to all later requests.
+     */
+    private val familySafeAdConfiguration: RequestConfiguration =
+        RequestConfiguration
+            .Builder()
+            .setMaxAdContentRating(RequestConfiguration.MAX_AD_CONTENT_RATING_G)
+            .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
+            .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
+            .build()
 
     /**
      * Shows an interstitial ad if the ad counter reaches the display threshold.
@@ -38,7 +53,9 @@ object AdHelper {
      */
     fun showAd(activity: Activity) {
         FirebaseHelper.logEvent(activity, "show_ad_attempt")
+        // An interstitial can be shown only once: drop it, then load the next one.
         ad?.show(activity)
+        ad = null
         loadAd(activity)
     }
 
@@ -47,6 +64,7 @@ object AdHelper {
      * @param activity The {@link Activity} context used to load the ad.
      */
     fun loadAd(activity: Activity) {
+        MobileAds.setRequestConfiguration(familySafeAdConfiguration)
         val adRequest: AdRequest = AdRequest.Builder().build()
 
         InterstitialAd.load(
