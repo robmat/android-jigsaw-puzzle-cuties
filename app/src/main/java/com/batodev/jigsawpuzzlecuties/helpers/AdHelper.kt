@@ -3,6 +3,7 @@ package com.batodev.jigsawpuzzlecuties.helpers
 import android.app.Activity
 import android.util.Log
 import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
@@ -26,8 +27,8 @@ object AdHelper {
         RequestConfiguration
             .Builder()
             .setMaxAdContentRating(RequestConfiguration.MAX_AD_CONTENT_RATING_G)
-            .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
-            .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
+            // Replaces the deprecated child-directed / under-age-of-consent tags in SDK 25.
+            .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
             .build()
 
     /**
