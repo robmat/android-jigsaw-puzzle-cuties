@@ -1,7 +1,9 @@
 package com.batodev.jigsawpuzzlecuties
 
+import android.app.Activity
 import android.graphics.drawable.Animatable
 import android.os.SystemClock
+import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.widget.ImageView
@@ -15,6 +17,8 @@ import androidx.test.espresso.UiController
 import androidx.test.espresso.ViewAction
 import androidx.test.espresso.matcher.ViewMatchers.isRoot
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry
+import androidx.test.runner.lifecycle.Stage
 import com.batodev.jigsawpuzzlecuties.helpers.Settings
 import com.batodev.jigsawpuzzlecuties.helpers.SettingsHelper
 import com.batodev.jigsawpuzzlecuties.view.PuzzlePiece
@@ -37,6 +41,48 @@ fun assertEventuallyDestroyed(
         Thread.sleep(50)
     }
     assertEquals(Lifecycle.State.DESTROYED, scenario.state)
+}
+
+private const val AD_APPEAR_GRACE_MS = 3_000L
+private const val AD_DISMISS_TIMEOUT_MS = 20_000L
+private const val AD_POLL_INTERVAL_MS = 500L
+
+private fun resumedActivity(): Activity? {
+    var resumed: Activity? = null
+    InstrumentationRegistry.getInstrumentation().runOnMainSync {
+        resumed =
+            ActivityLifecycleMonitorRegistry
+                .getInstance()
+                .getActivitiesInStage(Stage.RESUMED)
+                .firstOrNull()
+    }
+    return resumed
+}
+
+private fun Activity?.isAd(): Boolean = this?.javaClass?.name?.endsWith(".AdActivity") == true
+
+/**
+ * onGameOver() shows a real interstitial whenever one has been preloaded, and AdMob's
+ * AdActivity then holds window focus over the game-over dialog. Its launch is asynchronous, so
+ * first give it a short grace period to appear, then back out of it - repeatedly, since some
+ * creatives ignore back for their first seconds - until it is gone.
+ */
+fun dismissInterstitialIfShown() {
+    val instrumentation = InstrumentationRegistry.getInstrumentation()
+    val graceEnd = System.currentTimeMillis() + AD_APPEAR_GRACE_MS
+    while (!resumedActivity().isAd() && System.currentTimeMillis() < graceEnd) {
+        Thread.sleep(AD_POLL_INTERVAL_MS)
+    }
+    val deadline = System.currentTimeMillis() + AD_DISMISS_TIMEOUT_MS
+    while (System.currentTimeMillis() < deadline) {
+        val resumed = resumedActivity()
+        // null means between activities - just look again shortly.
+        if (resumed != null) {
+            if (!resumed.isAd()) return
+            instrumentation.sendKeyDownUpSync(KeyEvent.KEYCODE_BACK)
+        }
+        Thread.sleep(AD_POLL_INTERVAL_MS)
+    }
 }
 
 fun assertBackPressFinishesScenario(scenario: ActivityScenario<*>) {

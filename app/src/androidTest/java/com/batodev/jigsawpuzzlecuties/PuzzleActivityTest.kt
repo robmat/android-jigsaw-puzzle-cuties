@@ -74,6 +74,8 @@ class PuzzleActivityTest {
         // Stop the confetti GIF Glide starts playing in onGameOver() before
         // any further interaction - see stopGifAnimation()'s kdoc.
         stopGifAnimation(scenario, R.id.konfettiView)
+        // onGameOver() also shows the preloaded interstitial, if any, over the dialog.
+        dismissInterstitialIfShown()
 
         // onGameOver() shows the high-score AlertDialog synchronously as its
         // very last step, which steals window focus from the Activity -
