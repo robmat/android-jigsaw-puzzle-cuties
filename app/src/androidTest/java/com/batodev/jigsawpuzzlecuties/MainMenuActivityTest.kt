@@ -2,18 +2,14 @@ package com.batodev.jigsawpuzzlecuties
 
 import android.app.Activity
 import android.app.Instrumentation.ActivityResult
-import android.content.Intent
-import android.net.Uri
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.intent.Intents
-import androidx.test.espresso.intent.Intents.intended
 import androidx.test.espresso.intent.Intents.intending
-import androidx.test.espresso.intent.matcher.IntentMatchers.hasAction
-import androidx.test.espresso.intent.matcher.IntentMatchers.hasData
 import androidx.test.espresso.intent.matcher.IntentMatchers.isInternal
+import androidx.test.espresso.matcher.ViewMatchers.hasChildCount
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.isRoot
 import androidx.test.espresso.matcher.ViewMatchers.withId
@@ -27,8 +23,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 // Covers every button on main_menu_activity.xml: play, gallery (both the
-// empty-state Snackbar and the real-navigation case), and more-apps. The
-// three NeonButtons start View.INVISIBLE and only become visible via a
+// empty-state Snackbar and the real-navigation case). There is deliberately
+// no more-apps button (Families policy). The NeonButtons start View.INVISIBLE and only become visible via a
 // Handler.postDelayed(..., 500) animation kickoff in onCreate() - every
 // test waits that out first via waitFor() before interacting with them.
 @RunWith(AndroidJUnit4::class)
@@ -93,13 +89,13 @@ class MainMenuActivityTest {
     }
 
     @Test
-    fun moreAppsButtonOpensDeveloperPlayStorePage() {
+    fun noLinkOutToOtherStoreApps() {
+        // Families compliance: the developer page lists non-Families apps, so the
+        // "more apps" button was removed - guard against it coming back.
         val scenario = launchSettled()
 
-        onView(withId(R.id.main_menu_activity_more_apps)).perform(click())
-
-        intended(hasAction(Intent.ACTION_VIEW))
-        intended(hasData(Uri.parse("https://play.google.com/store/apps/dev?id=8228670503574649511")))
+        onView(withId(R.id.main_menu_activity_play_the_game)).check(matches(isDisplayed()))
+        onView(withId(R.id.buttons_container)).check(matches(hasChildCount(2)))
         scenario.close()
     }
 

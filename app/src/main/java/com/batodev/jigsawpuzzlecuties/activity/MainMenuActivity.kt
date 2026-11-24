@@ -10,7 +10,6 @@ import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.net.toUri
 import com.batodev.jigsawpuzzlecuties.R
 import com.batodev.jigsawpuzzlecuties.helpers.AdHelper
 import com.batodev.jigsawpuzzlecuties.helpers.FirebaseHelper
@@ -49,23 +48,20 @@ class MainMenuActivity : AppCompatActivity() {
 
         val playButton = findViewById<NeonButton>(R.id.main_menu_activity_play_the_game)
         val galleryButton = findViewById<NeonButton>(R.id.main_menu_activity_unlocked_gallery)
-        val moreAppsButton = findViewById<NeonButton>(R.id.main_menu_activity_more_apps)
         val emberfoxLogo = findViewById<ImageView>(R.id.main_menu_activity_emberfox_logo)
 
         playButton.visibility = View.INVISIBLE
         galleryButton.visibility = View.INVISIBLE
-        moreAppsButton.visibility = View.INVISIBLE
         emberfoxLogo.visibility = View.INVISIBLE
 
         playButton.setOnClickListener { play() }
         galleryButton.setOnClickListener { gallery() }
-        moreAppsButton.setOnClickListener { moreApps() }
 
-        NeonBtnOnPressChangeLook.setupNeonButtonTouchListeners(this, playButton, galleryButton, moreAppsButton)
+        NeonBtnOnPressChangeLook.setupNeonButtonTouchListeners(this, playButton, galleryButton)
 
         // Delay the menu button animations
         Handler(Looper.getMainLooper()).postDelayed({
-            animateMenuButtons(playButton, galleryButton, moreAppsButton, emberfoxLogo)
+            animateMenuButtons(playButton, galleryButton, emberfoxLogo)
         }, MENU_ANIMATION_DELAY_MS)
     }
 
@@ -122,29 +118,6 @@ class MainMenuActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Opens the Google Play Store to show more applications from the developer.
-     */
-    fun moreApps() {
-        FirebaseHelper.logButtonClick(this, "more_apps")
-        startActivity(
-            Intent(
-                Intent.ACTION_VIEW,
-                "https://play.google.com/store/apps/dev?id=8228670503574649511".toUri(),
-            ),
-        )
-    }
-
-    /**
-     * Opens the Google Play Store to navigate to the second part of the game.
-     */
-    fun playPart2() {
-        FirebaseHelper.logButtonClick(this, "play_part_2")
-        startActivity(
-            Intent(
-                Intent.ACTION_VIEW,
-                "https://play.google.com/store/apps/details?id=com.batodev.jigsawpuzzlecuties3".toUri(),
-            ),
-        )
-    }
+    // No "more apps" / sequel links: this is a Families app, and the developer
+    // page lists apps that are not, so linking out got it rejected (2026-11).
 }

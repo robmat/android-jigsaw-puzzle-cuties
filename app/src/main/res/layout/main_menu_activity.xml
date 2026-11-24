@@ -97,22 +97,6 @@
             app:nb_textColor="@color/colorAccent"
             app:nb_textSize="18dp"
             app:nb_textStyle="normal" />
-
-        <com.smb.glowbutton.NeonButton
-            android:id="@+id/main_menu_activity_more_apps"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:nb_cornerRadius="30dp"
-            app:nb_disabledStateColor="@android:color/darker_gray"
-            app:nb_drawableEnd="@drawable/ic_gallery_36dp"
-            app:nb_drawablePadding="10dp"
-            app:nb_drawableStart="@drawable/ic_gallery_36dp"
-            app:nb_gradientEnd="@color/colorAccent"
-            app:nb_gradientStart="@color/colorPrimary"
-            app:nb_text="@string/main_menu_activity_more_apps"
-            app:nb_textColor="@color/colorAccent"
-            app:nb_textSize="18dp"
-            app:nb_textStyle="normal" />
     </LinearLayout>
 
     <ImageView
